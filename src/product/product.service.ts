@@ -168,8 +168,8 @@ export class ProductService {
         `product.price`,
         `product.description`,
         `product.image_url`,
-        `product.created_at`,
-        `product.updated_at`,
+        // `product.created_at`,
+        // `product.updated_at`,
       ])
       .orderBy(`product.created_at`, `ASC`)
       .take(size)
@@ -187,6 +187,20 @@ export class ProductService {
         id: id,
       })
       .execute();
+    return response;
+  }
+
+  findOne(id: string) {
+    const response = this.productRepository.findOne({
+      where: { id: +id },
+      select: {
+        id: true,
+        name: true,
+        price: true,
+        image_url: true,
+        description: true,
+      },
+    });
     return response;
   }
 }

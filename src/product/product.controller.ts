@@ -91,4 +91,15 @@ export class ProductController {
       throw new HttpException(errorObj, errorObj.statusCode);
     }
   }
+
+  @Get(`:id`)
+  async getById(@Param(`id`) id: string) {
+    try {
+      return await this.productService.findOne(id);
+    } catch (error) {
+      console.log(error, 'error');
+      const errorObj = globalExceptionFIlter.catch(error);
+      throw new HttpException(errorObj, errorObj.statusCode);
+    }
+  }
 }

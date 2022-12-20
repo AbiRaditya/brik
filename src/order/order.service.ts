@@ -90,6 +90,7 @@ export class OrderService {
     const response = await this.orderRepository.find({
       relations: {
         products: true,
+        customer: true,
       },
     });
     return response;
