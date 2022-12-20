@@ -51,6 +51,22 @@ export class ProductSnap extends BaseEntity {
   })
   image_url: string;
 
+  @CreateDateColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP(6)',
+  })
+  public created_at: Date;
+
+  @UpdateDateColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP(6)',
+    onUpdate: 'CURRENT_TIMESTAMP(6)',
+  })
+  public updated_at: Date;
+
+  @Column()
+  productId: number;
+
   @ManyToOne(() => Product, (product) => product.product_snap)
   product: Product;
 }

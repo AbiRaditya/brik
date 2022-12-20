@@ -17,13 +17,6 @@ import { Order } from './order/order.entity';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule.forRoot()],
       useFactory: (configService: ConfigService) => {
-        console.log('====================================');
-        console.log(configService.get(`DB_HOST`));
-        console.log('====================================');
-        // Logger.log(
-        //   'configService.get(`DB_HOST`)',
-        //   configService.get(`DB_HOST`),
-        // );
         return {
           type: 'postgres',
           host: configService.get('DB_HOST'),
