@@ -40,6 +40,9 @@ export class Order extends BaseEntity {
   })
   public updated_at: Date;
 
+  @Column()
+  customerId: number;
+
   @ManyToOne(() => Customer, (customer) => customer.orders)
   customer: Customer;
 
