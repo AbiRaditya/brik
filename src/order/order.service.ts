@@ -6,6 +6,7 @@ import { OrderDto } from './dto/order.dto';
 import { Customer } from 'src/customer/customer.entity';
 import { CreateOrderDto } from './dto/createorder.dto';
 import { ProductSnap } from 'src/product_snap/product_snap.entity';
+import { Product } from 'src/product/product.entity';
 
 @Injectable()
 export class OrderService {
@@ -18,17 +19,17 @@ export class OrderService {
     const connection = this.orderRepository.manager.connection;
     return connection.transaction(async (transactionalEntityManager) => {
       const customerData = new Customer();
+      const queryBuilder = transactionalEntityManager.createQueryBuilder();
 
       customerData.name = orderDto.customerData.name;
       if (!customerData.name) {
         throw {
           message: {
-            message: `Failed to create customer, customer name must be string and no null`,
+            message: `Failed to create customer, customer name must be string and not null`,
           },
         };
       }
-      const cusomterResponse = await transactionalEntityManager
-        .createQueryBuilder()
+      const cusomterResponse = await queryBuilder
         .insert()
         .into(Customer)
         .values(customerData)
@@ -44,8 +45,7 @@ export class OrderService {
         foundCustomer = cusomterResponse.raw[0];
         customerId = cusomterResponse.raw[0].id;
       } else {
-        const dataResponse = await transactionalEntityManager
-          .createQueryBuilder()
+        const dataResponse = await queryBuilder
           .from(Customer, 'customer')
           .select([`customer.id`, `customer.name`])
           .where(`customer.name = :name`, {
@@ -57,9 +57,30 @@ export class OrderService {
         foundCustomer = dataResponse;
       }
 
+      for (const product of orderDto.products) {
+        const currentStock = await queryBuilder
+          .select('stock')
+          .from(Product, 'product')
+          .where({ id: product.id })
+          .getRawOne();
+
+        if (currentStock.stock - product.stock < 0) {
+          throw {
+            message: {
+              message: `Cannot reduce stock of product id:${product.id} below 0`,
+            },
+          };
+        }
+        await queryBuilder
+          .update(Product)
+          .set({ stock: () => `stock - ${product.stock}` })
+          .where({ id: product.id })
+          .execute();
+      }
+
       const snapResults = [];
       for (let i = 0; i < orderDto.products.length; i++) {
-        const id = orderDto.products[i];
+        const id = orderDto.products[i].id;
         const result = await transactionalEntityManager.findOneOrFail(
           ProductSnap,
           {
@@ -73,10 +94,13 @@ export class OrderService {
       const orderData = new Order();
       orderData.customerId = customerId;
       orderData.products = snapResults;
-      orderData.total_price = snapResults.reduce(
-        (acc, item) => acc + item.price,
-        0,
-      );
+      orderData.total_price = snapResults.reduce((acc, item) => {
+        for (const product of orderDto.products) {
+          if (product.id == item.productId) {
+            return acc + item.price * product.stock;
+          }
+        }
+      }, 0);
       const orderResult = await transactionalEntityManager.save(
         Order,
         orderData,

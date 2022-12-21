@@ -28,6 +28,7 @@ export class ProductService {
       const product = new Product();
       product.name = productDto.name;
       product.price = productDto.price;
+      product.stock = productDto.stock;
       product.description = productDto.description;
       product.image_url = productDto.image_url;
 
@@ -65,6 +66,7 @@ export class ProductService {
       price?: number;
       description?: string;
       image_url?: string;
+      stock?: number;
     } = {};
 
     if (editProductDto.name) {
@@ -78,6 +80,9 @@ export class ProductService {
     }
     if (editProductDto.image_url) {
       setProduct.image_url = editProductDto.image_url;
+    }
+    if (editProductDto.stock) {
+      setProduct.stock = editProductDto.stock;
     }
 
     const response = this.productRepository
@@ -97,6 +102,7 @@ export class ProductService {
       price?: number;
       description?: string;
       image_url?: string;
+      stock?: number;
     } = {};
 
     if (editProductDto.name) {
@@ -110,6 +116,9 @@ export class ProductService {
     }
     if (editProductDto.image_url) {
       setProduct.image_url = editProductDto.image_url;
+    }
+    if (editProductDto.stock) {
+      setProduct.stock = editProductDto.stock;
     }
 
     const connection = this.productRepository.manager.connection;
@@ -156,28 +165,35 @@ export class ProductService {
   findAll(queryParam: {
     limit: number;
     page: number;
+    search: string;
   }): Promise<[Product[], number]> {
     // const response = this.productRepository.findAndCount();
     // return response;
     const size = queryParam.limit ? queryParam.limit : 10;
     const skip = queryParam.page ? (queryParam.page - 1) * size : 0;
+    const search = queryParam.search;
 
     const response = this.productRepository
       .createQueryBuilder('product')
       .where(`product.isDeleted = :isDeleted`, { isDeleted: false })
+      .andWhere(`product.stock > 0`)
       .select([
         `product.id`,
         `product.name`,
         `product.price`,
         `product.description`,
         `product.image_url`,
-        // `product.created_at`,
-        // `product.updated_at`,
+        `product.stock`,
       ])
       .orderBy(`product.created_at`, `ASC`)
       .take(size)
       .skip(skip);
 
+    if (search) {
+      response.andWhere('product.name LIKE :search', {
+        search: `%${search}%`,
+      });
+    }
     return response.getManyAndCount();
   }
 
