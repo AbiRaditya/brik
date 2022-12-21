@@ -122,9 +122,12 @@ export class ProductService {
         setProduct,
       );
 
-      const productFind = await transactionalEntityManager.findOne(Product, {
-        where: { id: editProductDto.id },
-      });
+      const productFind = await transactionalEntityManager.findOneOrFail(
+        Product,
+        {
+          where: { id: editProductDto.id },
+        },
+      );
       //   const snapTest = await transactionalEntityManager.findOne(ProductSnap, {
       //     where: { productId: editProductDto.id },
       //     order: { created_at: `DESC` },
@@ -168,8 +171,8 @@ export class ProductService {
         `product.price`,
         `product.description`,
         `product.image_url`,
-        `product.created_at`,
-        `product.updated_at`,
+        // `product.created_at`,
+        // `product.updated_at`,
       ])
       .orderBy(`product.created_at`, `ASC`)
       .take(size)
@@ -187,6 +190,20 @@ export class ProductService {
         id: id,
       })
       .execute();
+    return response;
+  }
+
+  findOne(id: string) {
+    const response = this.productRepository.findOneOrFail({
+      where: { id: +id },
+      select: {
+        id: true,
+        name: true,
+        price: true,
+        image_url: true,
+        description: true,
+      },
+    });
     return response;
   }
 }
