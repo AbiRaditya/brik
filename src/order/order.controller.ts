@@ -29,7 +29,7 @@ export class OrderController {
     try {
       const response = await this.orderService.createOrder(orderDto);
       return {
-        message: [`success created`],
+        message: [`successfully create order`],
         data: response,
         status: 201,
       };

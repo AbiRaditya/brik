@@ -122,9 +122,12 @@ export class ProductService {
         setProduct,
       );
 
-      const productFind = await transactionalEntityManager.findOne(Product, {
-        where: { id: editProductDto.id },
-      });
+      const productFind = await transactionalEntityManager.findOneOrFail(
+        Product,
+        {
+          where: { id: editProductDto.id },
+        },
+      );
       //   const snapTest = await transactionalEntityManager.findOne(ProductSnap, {
       //     where: { productId: editProductDto.id },
       //     order: { created_at: `DESC` },
@@ -191,7 +194,7 @@ export class ProductService {
   }
 
   findOne(id: string) {
-    const response = this.productRepository.findOne({
+    const response = this.productRepository.findOneOrFail({
       where: { id: +id },
       select: {
         id: true,

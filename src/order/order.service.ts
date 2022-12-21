@@ -20,6 +20,13 @@ export class OrderService {
       const customerData = new Customer();
 
       customerData.name = orderDto.customerData.name;
+      if (!customerData.name) {
+        throw {
+          message: {
+            message: `Failed to create customer, customer name must be string and no null`,
+          },
+        };
+      }
       const cusomterResponse = await transactionalEntityManager
         .createQueryBuilder()
         .insert()
@@ -53,10 +60,13 @@ export class OrderService {
       const snapResults = [];
       for (let i = 0; i < orderDto.products.length; i++) {
         const id = orderDto.products[i];
-        const result = await transactionalEntityManager.findOne(ProductSnap, {
-          where: { productId: id },
-          order: { created_at: `DESC` },
-        });
+        const result = await transactionalEntityManager.findOneOrFail(
+          ProductSnap,
+          {
+            where: { productId: id },
+            order: { created_at: `DESC` },
+          },
+        );
         snapResults.push(result);
       }
 
@@ -72,7 +82,7 @@ export class OrderService {
         orderData,
       );
 
-      return orderResult;
+      return foundCustomer;
     });
   }
 
