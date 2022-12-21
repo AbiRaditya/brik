@@ -13,7 +13,7 @@ export class CreateOrderDto {
 
   @IsNotEmpty()
   @IsArray()
-  products: number[];
+  products: { id: number; stock: number }[];
 
   customerData: CustomerDto;
 }

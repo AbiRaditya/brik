@@ -37,6 +37,13 @@ export class Product extends BaseEntity {
   price: number;
 
   @Column({
+    type: 'int',
+    nullable: false,
+    default: 0,
+  })
+  stock: number;
+
+  @Column({
     type: 'varchar',
     nullable: true,
     unique: false,
