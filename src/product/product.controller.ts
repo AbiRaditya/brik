@@ -83,7 +83,13 @@ export class ProductController {
 
   @Get()
   async getAllProduct(
-    @Query() queryParam: { limit: number; page: number; search: string },
+    @Query()
+    queryParam: {
+      limit: number;
+      page: number;
+      search: string;
+      showAll: boolean;
+    },
   ): Promise<[Product[], number]> {
     try {
       const response = await this.productService.findAll(queryParam);

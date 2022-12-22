@@ -166,6 +166,7 @@ export class ProductService {
     limit: number;
     page: number;
     search: string;
+    showAll: boolean;
   }): Promise<[Product[], number]> {
     // const response = this.productRepository.findAndCount();
     // return response;
@@ -176,7 +177,7 @@ export class ProductService {
     const response = this.productRepository
       .createQueryBuilder('product')
       .where(`product.isDeleted = :isDeleted`, { isDeleted: false })
-      .andWhere(`product.stock > 0`)
+      // .andWhere(`product.stock > 0`)
       .select([
         `product.id`,
         `product.name`,
@@ -193,6 +194,9 @@ export class ProductService {
       response.andWhere('product.name LIKE :search', {
         search: `%${search}%`,
       });
+    }
+    if (!queryParam.showAll) {
+      response.andWhere(`product.stock > 0`);
     }
     return response.getManyAndCount();
   }
