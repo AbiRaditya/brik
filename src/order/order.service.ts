@@ -58,7 +58,8 @@ export class OrderService {
       }
 
       for (const product of orderDto.products) {
-        const currentStock = await queryBuilder
+        const currentStock = await transactionalEntityManager
+          .createQueryBuilder()
           .select('stock')
           .from(Product, 'product')
           .where({ id: product.id })
